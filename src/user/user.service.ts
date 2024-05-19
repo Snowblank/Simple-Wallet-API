@@ -168,45 +168,76 @@ export class UserService {
     }
 
     public async transferOtherCurrencyToOther(withdrawalUsername: string, withdrawalCurrencyName: string, depositUsername: string, depositcurrencyName: string, value: number) {
-        // const currencyData = await this.currencyService.getAllRateCurrency()
-        // const withdrawalRateUSD = currencyData[withdrawalCurrencyName];
-        // const depositRateUSD = currencyData[depositcurrencyName];
-        // if (withdrawalRateUSD == null || depositRateUSD == null) {
-        //     throw new Error("currency not found")
-        // }
+        const currencyData = await this.currencyService.getAllRateCurrency()
+        const withdrawalRateUSD = currencyData.find((currencyData => currencyData.name == withdrawalCurrencyName))?.value;
+        const depositRateUSD = currencyData.find((currencyData => currencyData.name == depositcurrencyName))?.value;
+        if (!withdrawalRateUSD || !depositRateUSD) {
+            throw new Error("currency not found")
+        }
 
-        // const depositUser = this.userData.find(user => user.username == depositUsername);
-        // if (depositUser == null) {
-        //     throw new Error("user not found")
-        // }
+        const depositUserRepository = await this.userRepository.findOne({
+            relations: ['wallets'],
+            where: { name: depositUsername }
+        })
+        if (depositUserRepository == null) {
+            throw new Error("user not found")
+        }
 
-        // const withdrawalUser = this.userData.find(user => user.username == withdrawalUsername);
-        // if (withdrawalUser == null) {
-        //     throw new Error("user not found")
-        // }
+        const withdrawalUserRepository = await this.userRepository.findOne({
+            relations: ['wallets'],
+            where: { name: withdrawalUsername }
+        })
+        if (withdrawalUserRepository == null) {
+            throw new Error("user not found")
+        }
 
-        // //check balance withdrawal
-        // if (withdrawalUser.balance[withdrawalCurrencyName] < value) {
-        //     throw new Error("balance not enough")
-        // }
+        //check balance withdrawal
+        const withdrawalCurrency = withdrawalUserRepository.wallets.find((walletRp) => walletRp.currency === withdrawalCurrencyName);
+        if (!withdrawalCurrency || withdrawalCurrency.value < value) {
+            throw new Error("balance not enough")
+        }
 
-        // const amountInUSD = value * withdrawalRateUSD;
-        // const convertedAmount = amountInUSD / depositRateUSD;
+        //convert
+        const amountInUSD = value * withdrawalRateUSD;
+        const convertedAmount = amountInUSD / depositRateUSD;
 
-        // depositUser.balance[depositcurrencyName] ? depositUser.balance[depositcurrencyName] += convertedAmount : depositUser.balance[depositcurrencyName] = convertedAmount;
-        // withdrawalUser.balance[withdrawalCurrencyName] -= value;
+        const increasewithdrawalResult = await this.walletRepository.increment({
+            currency: withdrawalCurrencyName,
+            user: withdrawalUserRepository
+        },
+            'value',
+            -value
+        )
 
-        // return {
-        //     withdraw: {
-        //         username: withdrawalUser.username,
-        //         currency: withdrawalCurrencyName,
-        //         balance: withdrawalUser.balance[withdrawalCurrencyName]
-        //     },
-        //     deposit: {
-        //         username: depositUser.username,
-        //         currency: depositcurrencyName,
-        //         balance: depositUser.balance[depositcurrencyName]
-        //     }
-        // }
+        const increaseDepositResult = await this.walletRepository.increment({
+            currency: depositcurrencyName,
+            user: depositUserRepository
+        },
+            'value',
+            value
+        )
+        if (increaseDepositResult.affected < 1) {
+            const walletData = this.walletRepository.create({ currency: depositcurrencyName, value: value, user: depositUserRepository });
+            await this.walletRepository.save(walletData);
+        }
+
+        const depositUser = await this.userRepository.findOne({ where: { name: depositUsername } });
+        const withdrawalUser = await this.userRepository.findOne({ where: { name: withdrawalUsername } });
+
+        const withdrawUserBalance = withdrawalUser.wallets.find((walletData) => walletData.currency == withdrawalCurrencyName);
+        const depositUserBalance = depositUser.wallets.find((walletData) => walletData.currency == depositcurrencyName);
+
+        return {
+            withdraw: {
+                username: withdrawalUser.name,
+                currency: withdrawalCurrencyName,
+                balance: withdrawUserBalance.value
+            },
+            deposit: {
+                username: depositUser.name,
+                currency: depositcurrencyName,
+                balance: depositUserBalance.value
+            }
+        }
     }
 }
