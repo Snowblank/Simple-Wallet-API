@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { CurrencyService } from './currency.service';
 
 interface IRateCurrency {
@@ -15,28 +15,31 @@ export class CurrencyController {
     //Admin
     @Get('rateexchange')
     public async getAllCurrencyBalance() {
-        const rateCurrency = await this.currencyService.getAllRateCurrency();
+        const rateCurrencyList = await this.currencyService.getAllRateCurrency();
+        console.log("rateCurrencyList", rateCurrencyList)
 
         //format
-        const responseData = [];
-        for (const currency in rateCurrency) {
-            const data: IRateCurrency = {
-                currency,
-                balance: rateCurrency[currency]
-            }
-            responseData.push(data);
+        const responseData = {};
+        for (const index in rateCurrencyList) {
+            const targetRateCurrency = rateCurrencyList[index];
+            responseData[targetRateCurrency.name] = targetRateCurrency.value
         }
-        return { result: responseData }
+        return responseData
     }
 
     @Patch('rateexchange/:currencyName')
     public async updateRateExchange(@Param("currencyName") currencyName: string, @Body() param: { amount: number }) {
         try {
             await this.currencyService.updateRateExchange(currencyName, param.amount);
-            return "update rate-exchange success"
+            return `update rateExchange: ${currencyName} success`
         } catch (e) {
             throw e
         }
+    }
+
+    @Post('rateexchange/:currencyName')
+    public async addRateExchange(@Param("currencyName") currencyName: string, @Body() param: { amount: number }) {
+        return await this.currencyService.addRateExchange(currencyName, param.amount)
     }
 
 
