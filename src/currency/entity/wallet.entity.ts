@@ -12,6 +12,6 @@ export class WalletEntity {
     @Column()
     value: number;
     
-    @ManyToOne(() => UserEntity, user => user.wallets)
+    @ManyToOne(() => UserEntity, user => user.wallets,)
     user: UserEntity;
 }

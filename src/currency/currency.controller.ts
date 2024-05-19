@@ -1,11 +1,7 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { CurrencyService } from './currency.service';
-
-interface IRateCurrency {
-    currency: string;
-    balance: number;
-}
-
+import { AuthGuard } from 'src/guard/auth.guard';
+import { ERoleUser, RoleGuard as RoleGuard, Roles } from 'src/guard/role.guard';
 @Controller('currency')
 export class CurrencyController {
     constructor(
@@ -13,10 +9,11 @@ export class CurrencyController {
     ) { }
 
     //Admin
+    @UseGuards(AuthGuard, RoleGuard)
+    @Roles(ERoleUser.ADMIN)
     @Get('rateexchange')
     public async getAllCurrencyBalance() {
         const rateCurrencyList = await this.currencyService.getAllRateCurrency();
-        console.log("rateCurrencyList", rateCurrencyList)
 
         //format
         const responseData = {};
@@ -27,6 +24,8 @@ export class CurrencyController {
         return responseData
     }
 
+    @UseGuards(AuthGuard, RoleGuard)
+    @Roles(ERoleUser.ADMIN)
     @Patch('rateexchange/:currencyName')
     public async updateRateExchange(@Param("currencyName") currencyName: string, @Body() param: { amount: number }) {
         try {
@@ -37,10 +36,10 @@ export class CurrencyController {
         }
     }
 
+    @UseGuards(AuthGuard, RoleGuard)
+    @Roles(ERoleUser.ADMIN)
     @Post('rateexchange/:currencyName')
     public async addRateExchange(@Param("currencyName") currencyName: string, @Body() param: { amount: number }) {
         return await this.currencyService.addRateExchange(currencyName, param.amount)
     }
-
-
 }

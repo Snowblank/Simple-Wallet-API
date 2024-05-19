@@ -1,5 +1,8 @@
-import { Body, Controller, Get, Patch, Post } from '@nestjs/common';
-import { UserService } from './user.service';
+import { Body, Controller, Get, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { ETypeAccount, UserService } from './user.service';
+import { AuthGuard } from 'src/guard/auth.guard';
+import { ERoleUser, RoleGuard, Roles } from 'src/guard/role.guard';
+import { Request } from 'express';
 
 interface IUpdateBalanceRequest {
     username: string;
@@ -20,6 +23,26 @@ interface ITransferCurrencyOtherRequest {
     value: number;
 }
 
+interface ICreateUserAccountRequest {
+    username: string;
+    password: string;
+    role: ETypeAccount;
+}
+
+interface ILoginUserRequest {
+    username: string;
+    password: string;
+}
+
+interface IRequestData extends Request {
+    user: {
+        role: ERoleUser;
+        name: string;
+        iat: number;
+        exp: number;
+    }
+}
+
 @Controller('user')
 export class UserController {
     constructor(
@@ -27,6 +50,8 @@ export class UserController {
     ) { }
 
     //Admin Role
+    @UseGuards(AuthGuard, RoleGuard)
+    @Roles(ERoleUser.ADMIN)
     @Patch('balance')
     public async updateCurrencyBalanceByUser(@Body() param: IUpdateBalanceRequest) {
         const currentBalance = await this.userService.updateCurrencyBalanceByUser(param.username, param.currency, param.value)
@@ -34,23 +59,34 @@ export class UserController {
     }
 
     //User Role
+    @UseGuards(AuthGuard, RoleGuard)
+    @Roles(ERoleUser.USER)
     @Post('transfer/same')
-    public async transferSameCurrencyToOther(@Body() param: ITransferCurrencySameRequest) {
-        const withdrawalUser = "" //using JWT
+    public async transferSameCurrencyToOther(@Req() req: IRequestData, @Body() param: ITransferCurrencySameRequest) {
+        const withdrawalUser = req.user.name;
         const response = await this.userService.transferSameCurrencyToOther(withdrawalUser, param.deposit_user, param.currency, param.value)
         return response
     }
 
+    @UseGuards(AuthGuard, RoleGuard)
+    @Roles(ERoleUser.USER)
     @Post('transfer/other')
-    public async transferOtherCurrencyToOther(@Body() param: ITransferCurrencyOtherRequest) {
-        const withdrawalUser = "" //using JWT
+    public async transferOtherCurrencyToOther(@Req() req: IRequestData, @Body() param: ITransferCurrencyOtherRequest) {
+        const withdrawalUser = req.user.name;
         const response = await this.userService.transferOtherCurrencyToOther(withdrawalUser, param.withdrawal_currency, param.deposit_user, param.deposit_currency, param.value)
         return response
     }
 
+    @Post('account')
+    public async createAccount(@Body() param: ICreateUserAccountRequest) {
+        await this.userService.createUser(param.username, param.password, param.role)
+        return "createAccount Success:"
+    }
+
     @Post('login')
-    public async loginUser() {
-        return "login user success"
+    public async loginUser(@Body() param: ILoginUserRequest) {
+        const token = await this.userService.loginUser(param.username, param.password)
+        return { token }
     }
 
 }
