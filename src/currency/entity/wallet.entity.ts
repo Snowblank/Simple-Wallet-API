@@ -5,13 +5,13 @@ import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 export class WalletEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string;
-    
+
     @Column()
     currency: string;
-    
-    @Column()
-    value: number;
-    
+
+    @Column('decimal', { precision: 20, scale: 10 })
+    value: string;
+
     @ManyToOne(() => UserEntity, user => user.wallets,)
     user: UserEntity;
 }

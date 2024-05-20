@@ -12,7 +12,7 @@ export class CurrencyController {
     @UseGuards(AuthGuard, RoleGuard)
     @Roles(ERoleUser.ADMIN)
     @Get('rateexchange')
-    public async getAllCurrencyBalance() {
+    public async getAllRateCurrencyBalance() {
         const rateCurrencyList = await this.currencyService.getAllRateCurrency();
 
         //format

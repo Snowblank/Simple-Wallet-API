@@ -52,6 +52,14 @@ export class UserController {
     //Admin Role
     @UseGuards(AuthGuard, RoleGuard)
     @Roles(ERoleUser.ADMIN)
+    @Get('balance')
+    public async getAllTotalBalance(){
+        const response = await this.userService.getAllTotalBalance();
+        return response;
+    }
+
+    @UseGuards(AuthGuard, RoleGuard)
+    @Roles(ERoleUser.ADMIN)
     @Patch('balance')
     public async updateCurrencyBalanceByUser(@Body() param: IUpdateBalanceRequest) {
         const currentBalance = await this.userService.updateCurrencyBalanceByUser(param.username, param.currency, param.value)
