@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  mariadb:
+    image: mariadb:latest
+    container_name: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: 12345
+      MYSQL_DATABASE: example
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: 1234
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+  simple-wallet:
+    build:
+      context: .
+    container_name: simple-wallet
+    environment:
+      DB_HOSTNAME: mariadb
+      DB_PORT: 3306
+      DB_USERNAME: admin
+      DB_PASSWORD: 1234
+      DB_NAME: example
+    depends_on:
+      - mariadb
+    ports:
+      - "3000:3000"
+
+volumes:
+  mariadb_data:
