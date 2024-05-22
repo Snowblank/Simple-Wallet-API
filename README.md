@@ -58,6 +58,11 @@ $ yarn run test:e2e
 $ yarn run test:cov
 ```
 
+## How to Use
+- using Docker and run open terminal and run docker compose in root repository
+- Import API Schema (simple-wallet.postman_collection.json)
+- using API Create Account POST (/user/account) (enum role 0 = User, 1 = Admin)
+
 ## Support
 
 Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).

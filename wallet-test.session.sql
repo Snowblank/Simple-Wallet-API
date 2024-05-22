@@ -1,21 +1,21 @@
-CREATE TABLE users (
-    id CHAR(36) PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    account_type INT NOT NULL
-);
-CREATE TABLE wallets (
-    id CHAR(36) PRIMARY KEY,
-    currency VARCHAR(255) NOT NULL,
-    value DOUBLE NOT NULL,
-    userid CHAR(36),
-    FOREIGN KEY (userid) REFERENCES users(id)
-);
-CREATE TABLE exchangerates (
-    id CHAR(36) PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    value DOUBLE NOT NULL
-)
+-- CREATE TABLE users (
+--     id CHAR(36) PRIMARY KEY,
+--     name VARCHAR(255) NOT NULL,
+--     password VARCHAR(255) NOT NULL,
+--     account_type INT NOT NULL
+-- );
+-- CREATE TABLE wallets (
+--     id CHAR(36) PRIMARY KEY,
+--     currency VARCHAR(255) NOT NULL,
+--     value DOUBLE NOT NULL,
+--     userid CHAR(36),
+--     FOREIGN KEY (userid) REFERENCES users(id)
+-- );
+-- CREATE TABLE exchangerates (
+--     id CHAR(36) PRIMARY KEY,
+--     name VARCHAR(255) NOT NULL,
+--     value DOUBLE NOT NULL
+-- )
 
 SELECT *
 FROM wallets;
@@ -32,6 +32,6 @@ FROM exchangerates;
 -- INSERT INTO exchangerates (name, value)
 -- VALUES ('PND', 10)
 
--- DROP TABLE IF EXISTS wallets;
--- DROP TABLE IF EXISTS users;
--- DROP TABLE IF EXISTS exchangerates;
+DROP TABLE IF EXISTS wallets;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS exchangerates;

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CurrencyService } from 'src/currency/currency.service';
 import { UserEntity } from './entity/user.entity';
@@ -95,7 +95,7 @@ export class UserService {
         try {
             const currencyData = await this.currencyService.getAllRateCurrency()
             if (!currencyData.some(currencyData => currencyData.name == currencyName)) {
-                throw new Error("currency not found")
+                throw new NotFoundException("currency not found")
             }
 
             const userRepository = await queryRunner.manager.findOne(UserEntity, {
@@ -103,7 +103,7 @@ export class UserService {
                 where: { name: userName }
             })
             if (userRepository == null) {
-                throw new Error("user not found")
+                throw new NotFoundException("user not found")
             }
 
             const targetWallet = userRepository.wallets.find((currencyData) => currencyData.currency == currencyName);
@@ -148,17 +148,18 @@ export class UserService {
         queryRunner.startTransaction()
 
         try {
+            console.log("transferSameCurrencyToOther")
             const currencyData = await this.currencyService.getAllRateCurrency()
             if (!currencyData.some(currencyData => currencyData.name == currencyName)) {
-                throw new Error("currency not found")
+                throw new NotFoundException("currency not found")
             }
-
+            console.log("currencyData",currencyData)
             const depositUserRepository = await queryRunner.manager.findOne(UserEntity, {
                 relations: ['wallets'],
                 where: { name: depositUsername }
             })
             if (depositUserRepository == null) {
-                throw new Error("user not found")
+                throw new NotFoundException("user not found")
             }
 
             const withdrawalUserRepository = await queryRunner.manager.findOne(UserEntity, {
@@ -166,14 +167,14 @@ export class UserService {
                 where: { name: withdrawalUsername }
             })
             if (withdrawalUserRepository == null) {
-                throw new Error("user not found")
+                throw new NotFoundException("user not found")
             }
 
             //check balance withdrawal
             const targetCurrency = withdrawalUserRepository.wallets.find((walletRp) => walletRp.currency === currencyName);
             const currValue = parseFloat(targetCurrency.value);
             if (!targetCurrency || currValue < value) {
-                throw new Error("balance not enough")
+                throw new BadRequestException("balance not enough")
             }
 
             const newValue = (currValue - value).toFixed(8);
@@ -225,6 +226,7 @@ export class UserService {
             }
         } catch (e) {
             await queryRunner.rollbackTransaction();
+            throw e;
         } finally {
             await queryRunner.release();
         }
@@ -239,7 +241,7 @@ export class UserService {
             const withdrawalRateUSD = currencyData.find((currencyData => currencyData.name == withdrawalCurrencyName))?.value;
             const depositRateUSD = currencyData.find((currencyData => currencyData.name == depositcurrencyName))?.value;
             if (!withdrawalRateUSD || !depositRateUSD) {
-                throw new Error("currency not found")
+                throw new NotFoundException("currency not found")
             }
 
             const depositUserRepository = await queryRunner.manager.findOne(UserEntity, {
@@ -247,7 +249,7 @@ export class UserService {
                 where: { name: depositUsername }
             })
             if (depositUserRepository == null) {
-                throw new Error("user not found")
+                throw new NotFoundException("user not found")
             }
 
             const withdrawalUserRepository = await queryRunner.manager.findOne(UserEntity, {
@@ -255,7 +257,7 @@ export class UserService {
                 where: { name: withdrawalUsername }
             })
             if (withdrawalUserRepository == null) {
-                throw new Error("user not found")
+                throw new NotFoundException("user not found")
             }
 
             //check balance withdrawal
@@ -263,7 +265,7 @@ export class UserService {
             const currValue = parseFloat(withdrawalCurrency.value);
 
             if (!withdrawalCurrency || currValue < value) {
-                throw new Error("balance not enough")
+                throw new BadRequestException("balance not enough")
             }
 
             //convert

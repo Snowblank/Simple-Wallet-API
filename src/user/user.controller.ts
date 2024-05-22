@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { ETypeAccount, UserService } from './user.service';
 import { AuthGuard } from 'src/guard/auth.guard';
 import { ERoleUser, RoleGuard, Roles } from 'src/guard/role.guard';
@@ -71,9 +71,12 @@ export class UserController {
     @Roles(ERoleUser.USER)
     @Post('transfer/same')
     public async transferSameCurrencyToOther(@Req() req: IRequestData, @Body() param: ITransferCurrencySameRequest) {
-        const withdrawalUser = req.user.name;
-        const response = await this.userService.transferSameCurrencyToOther(withdrawalUser, param.deposit_user, param.currency, param.value)
-        return response
+            const withdrawalUser = req.user.name;
+            if(withdrawalUser == param.deposit_user){
+                throw new BadRequestException("can't transfer in same wallet")
+            }
+            const response = await this.userService.transferSameCurrencyToOther(withdrawalUser, param.deposit_user, param.currency, param.value)
+            return response
     }
 
     @UseGuards(AuthGuard, RoleGuard)

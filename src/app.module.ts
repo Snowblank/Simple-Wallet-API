@@ -28,6 +28,7 @@ import { RoleGuard } from './guard/role.guard';
         password: cfgService.get("DB_PASSWORD"),
         database: cfgService.get("DB_NAME"),
         entities: [WalletEntity, UserEntity, ExchangeRateEntity],
+        synchronize: true
       })
     }),
     JwtModule.registerAsync(
