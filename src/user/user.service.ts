@@ -1,12 +1,12 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CurrencyService } from 'src/currency/currency.service';
+import { CurrencyService } from '../currency/currency.service';
 import { UserEntity } from './entity/user.entity';
 import { DataSource, Repository } from 'typeorm';
-import { WalletEntity } from 'src/currency/entity/wallet.entity';
+import { WalletEntity } from '../currency/entity/wallet.entity';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { ExchangeRateEntity } from 'src/currency/entity/rateexchange.entity';
+import { ExchangeRateEntity } from '../currency/entity/rateexchange.entity';
 
 interface IUser {
     username: string;
@@ -133,6 +133,7 @@ export class UserService {
                     user: { id: userRepository.id }
                 }
             });
+
             await queryRunner.commitTransaction();
             return parseFloat(result.value);
         } catch (e) {

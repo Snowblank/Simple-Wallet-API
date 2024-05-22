@@ -1,4 +1,4 @@
-import { WalletEntity } from "src/currency/entity/wallet.entity";
+import { WalletEntity } from "../../currency/entity/wallet.entity";
 import { Column, Entity, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 import { ETypeAccount } from "../user.service";
 

@@ -1,4 +1,4 @@
-import { UserEntity } from "src/user/entity/user.entity";
+import { UserEntity } from "../../user/entity/user.entity";
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('wallets')

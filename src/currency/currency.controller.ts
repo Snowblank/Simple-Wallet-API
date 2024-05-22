@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { CurrencyService } from './currency.service';
-import { AuthGuard } from 'src/guard/auth.guard';
-import { ERoleUser, RoleGuard as RoleGuard, Roles } from 'src/guard/role.guard';
+import { AuthGuard } from '../guard/auth.guard';
+import { ERoleUser, RoleGuard as RoleGuard, Roles } from '../guard/role.guard';
 @Controller('currency')
 export class CurrencyController {
     constructor(

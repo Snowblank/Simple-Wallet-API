@@ -1,7 +1,7 @@
 import { BadRequestException, Body, Controller, Get, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { ETypeAccount, UserService } from './user.service';
-import { AuthGuard } from 'src/guard/auth.guard';
-import { ERoleUser, RoleGuard, Roles } from 'src/guard/role.guard';
+import { AuthGuard } from '../guard/auth.guard';
+import { ERoleUser, RoleGuard, Roles } from '../guard/role.guard';
 import { Request } from 'express';
 
 interface IUpdateBalanceRequest {
